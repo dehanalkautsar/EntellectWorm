@@ -17,4 +17,5 @@ public class Worm {
 
     @SerializedName("movementRange")
     public int movementRange;
+
 }

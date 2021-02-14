@@ -1,10 +1,10 @@
 package za.co.entelect.challenge.command;
 
+
 public class BananaBombCommand implements Command{
 
     private final int x;
     private final int y;
-
     public BananaBombCommand(int x, int y) {
         this.x = x;
         this.y = y;
@@ -12,6 +12,6 @@ public class BananaBombCommand implements Command{
 
     @Override
     public String render() {
-        return String.format("BananaBomb %d %d", x, y);
+        return String.format("banana %x %y", x, y );
     }
 }

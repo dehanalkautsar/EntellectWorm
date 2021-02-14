@@ -1,9 +1,9 @@
 package za.co.entelect.challenge.command;
 
+
 public class SnowballCommand implements Command {
     private final int x;
     private final int y;
-
     public SnowballCommand(int x, int y) {
         this.x = x;
         this.y = y;
@@ -11,6 +11,6 @@ public class SnowballCommand implements Command {
 
     @Override
     public String render() {
-        return String.format("Snowball %d %d", x, y);
+        return String.format("snowball %x %y", x, y );
     }
 }

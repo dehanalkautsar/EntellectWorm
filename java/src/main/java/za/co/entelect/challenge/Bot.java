@@ -32,12 +32,95 @@ public class Bot {
     public Command run() {
 
         Worm enemyWorm = getFirstWormInRange();
-        if (enemyWorm != null) {
+        Worm enemyWormBomb = getFirstWormInRangeToBomb(currentWorm.banana.range); //assume : range of banana and snowball is th same
+
+        /*if (enemyWorm != null) {
             Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
             return new ShootCommand(direction);
+        }*/
+
+        if (currentWorm.id == 1) {
+            if (enemyWorm != null) {
+                Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
+                return new ShootCommand(direction);
+            }
+
+            if (currentWorm.position.x >= 15 && currentWorm.position.x <= 18 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
+                return new DoNothingCommand();
+            }
+
+            List<Cell> surroundingBlocks = getSurroundingCells(currentWorm.position.x, currentWorm.position.y);
+            int cellIdx = 2; //random.nextInt(surroundingBlocks.size());
+            if (currentWorm.position.y > 17) {
+                cellIdx = 5;
+            }
+
+            Cell block = surroundingBlocks.get(cellIdx);
+            if (block.type == CellType.AIR) {
+                return new MoveCommand(block.x, block.y);
+            } else if (block.type == CellType.DIRT) {
+                return new DigCommand(block.x, block.y);
+            }
         }
 
-        List<Cell> surroundingBlocks = getSurroundingCells(currentWorm.position.x, currentWorm.position.y);
+        if (currentWorm.id == 2) {
+            if (enemyWormBomb != null && currentWorm.banana.count > 0)  {
+                return new BananaBombCommand(enemyWormBomb.position.x, enemyWormBomb.position.y);
+            }
+
+            if (enemyWorm != null) {
+                Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
+                return new ShootCommand(direction);
+            }
+
+            if (currentWorm.position.x >= 15 && currentWorm.position.x <= 18 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
+                return new DoNothingCommand();
+            }
+
+            List<Cell> surroundingBlocks = getSurroundingCells(currentWorm.position.x, currentWorm.position.y);
+            int cellIdx = 0; //random.nextInt(surroundingBlocks.size());
+            if (currentWorm.position.y < 16) {
+                cellIdx = 7;
+            }
+
+            Cell block = surroundingBlocks.get(cellIdx);
+            if (block.type == CellType.AIR) {
+                return new MoveCommand(block.x, block.y);
+            } else if (block.type == CellType.DIRT) {
+                return new DigCommand(block.x, block.y);
+            }
+        }
+
+        if (currentWorm.id == 3) {
+            if (enemyWormBomb != null && currentWorm.snowball.count > 0) {
+                Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
+                return new SnowballCommand(enemyWormBomb.position.x, enemyWormBomb.position.y);
+            }
+
+            if (enemyWorm != null) {
+                Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
+                return new ShootCommand(direction);
+            }
+
+            if (currentWorm.position.x >= 15 && currentWorm.position.x <= 18 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
+                return new DoNothingCommand();
+            }
+
+            List<Cell> surroundingBlocks = getSurroundingCells(currentWorm.position.x, currentWorm.position.y);
+            int cellIdx = 6; //random.nextInt(surroundingBlocks.size());
+            if (currentWorm.position.x > 17) {
+                cellIdx = 1;
+            }
+
+            Cell block = surroundingBlocks.get(cellIdx);
+            if (block.type == CellType.AIR) {
+                return new MoveCommand(block.x, block.y);
+            } else if (block.type == CellType.DIRT) {
+                return new DigCommand(block.x, block.y);
+            }
+        }
+
+        /*List<Cell> surroundingBlocks = getSurroundingCells(currentWorm.position.x, currentWorm.position.y);
         int cellIdx = random.nextInt(surroundingBlocks.size());
 
         Cell block = surroundingBlocks.get(cellIdx);
@@ -45,7 +128,7 @@ public class Bot {
             return new MoveCommand(block.x, block.y);
         } else if (block.type == CellType.DIRT) {
             return new DigCommand(block.x, block.y);
-        }
+        }*/
 
         return new DoNothingCommand();
     }
@@ -60,11 +143,36 @@ public class Bot {
 
         for (Worm enemyWorm : opponent.worms) {
             String enemyPosition = String.format("%d_%d", enemyWorm.position.x, enemyWorm.position.y);
-            if (cells.contains(enemyPosition)) {
+            if (cells.contains(enemyPosition) && enemyWorm.health > 0) {
                 return enemyWorm;
             }
         }
 
+        return null;
+    }
+
+    private Worm getFirstWormInRangeToBomb(int range) {
+        int coordinateX = currentWorm.position.x;
+        int coordinateY = currentWorm.position.y;
+
+        for (int i = coordinateX - 5; i <= coordinateX + 5; i++) {
+            for (int j = coordinateY - 5; j <= coordinateY + 5; j++) {
+                if (i == coordinateX && j == coordinateY) {
+                    continue;
+                }
+                if (!isValidCoordinate(i,j)) {
+                    continue;
+                }
+                if (euclideanDistance(coordinateX,coordinateY,i,j) > range) {
+                    continue;
+                }
+                for (Worm enemyWorm : opponent.worms) {
+                    if (i == enemyWorm.position.x && j == enemyWorm.position.y) {
+                        return enemyWorm;
+                    }
+                }
+            }
+        }
         return null;
     }
 
@@ -98,12 +206,14 @@ public class Bot {
         return directionLines;
     }
 
+
+
     private List<Cell> getSurroundingCells(int x, int y) {
         ArrayList<Cell> cells = new ArrayList<>();
         for (int i = x - 1; i <= x + 1; i++) {
             for (int j = y - 1; j <= y + 1; j++) {
                 // Don't include the current position
-                if (i != x && j != y && isValidCoordinate(i, j)) {
+                if ((i != x || j != y) && isValidCoordinate(i, j)) {
                     cells.add(gameState.map[j][i]);
                 }
             }
