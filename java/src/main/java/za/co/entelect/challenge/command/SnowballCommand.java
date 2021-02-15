@@ -11,6 +11,6 @@ public class SnowballCommand implements Command {
 
     @Override
     public String render() {
-        return String.format("snowball %x %y", x, y );
+        return String.format("snowball %d %d", x, y );
     }
 }

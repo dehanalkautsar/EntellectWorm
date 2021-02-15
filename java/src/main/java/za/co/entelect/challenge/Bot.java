@@ -32,7 +32,7 @@ public class Bot {
     public Command run() {
 
         Worm enemyWorm = getFirstWormInRange();
-        Worm enemyWormBomb = getFirstWormInRangeToBomb(currentWorm.banana.range); //assume : range of banana and snowball is th same
+        Position enemyWormBomb = getFirstWormInRangeToBomb(5); //assume : range of banana and snowball is th same
 
         /*if (enemyWorm != null) {
             Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
@@ -64,8 +64,8 @@ public class Bot {
         }
 
         if (currentWorm.id == 2) {
-            if (enemyWormBomb != null && currentWorm.banana.count > 0)  {
-                return new BananaBombCommand(enemyWormBomb.position.x, enemyWormBomb.position.y);
+            if (enemyWormBomb.x != currentWorm.position.x && enemyWormBomb.y != currentWorm.position.y && getCurrentWorm(gameState).bananaBombs.count > 0)  {
+                return new BananaBombCommand(enemyWormBomb.x, enemyWormBomb.y);
             }
 
             if (enemyWorm != null) {
@@ -92,9 +92,8 @@ public class Bot {
         }
 
         if (currentWorm.id == 3) {
-            if (enemyWormBomb != null && currentWorm.snowball.count > 0) {
-                Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
-                return new SnowballCommand(enemyWormBomb.position.x, enemyWormBomb.position.y);
+            if (enemyWormBomb.x != currentWorm.position.x && enemyWormBomb.y != currentWorm.position.y &&  getCurrentWorm(gameState).snowballs.count > 0) {
+                return new SnowballCommand(enemyWormBomb.x, enemyWormBomb.y);
             }
 
             if (enemyWorm != null) {
@@ -151,7 +150,7 @@ public class Bot {
         return null;
     }
 
-    private Worm getFirstWormInRangeToBomb(int range) {
+    private Position getFirstWormInRangeToBomb(int range) {
         int coordinateX = currentWorm.position.x;
         int coordinateY = currentWorm.position.y;
 
@@ -168,12 +167,12 @@ public class Bot {
                 }
                 for (Worm enemyWorm : opponent.worms) {
                     if (i == enemyWorm.position.x && j == enemyWorm.position.y) {
-                        return enemyWorm;
+                        return enemyWorm.position;
                     }
                 }
             }
         }
-        return null;
+        return currentWorm.position;
     }
 
     private List<List<Cell>> constructFireDirectionLines(int range) {
