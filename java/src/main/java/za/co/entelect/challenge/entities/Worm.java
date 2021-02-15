@@ -23,4 +23,7 @@ public class Worm {
 
     @SerializedName("snowballs")
     public Snowball snowballs;
+
+    @SerializedName("roundsUntilUnfrozen")
+    public int freeze_round;
 }

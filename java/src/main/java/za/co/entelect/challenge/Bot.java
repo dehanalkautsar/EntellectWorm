@@ -93,7 +93,18 @@ public class Bot {
 
         if (currentWorm.id == 3) {
             if (enemyWormBomb.x != currentWorm.position.x && enemyWormBomb.y != currentWorm.position.y &&  getCurrentWorm(gameState).snowballs.count > 0) {
-                return new SnowballCommand(enemyWormBomb.x, enemyWormBomb.y);
+                for (Worm enemyFreeze : opponent.worms) {
+                    if (enemyFreeze.position.x == enemyWormBomb.x && enemyFreeze.position.y == enemyWormBomb.y) {
+                        if (enemyFreeze.freeze_round == 0) {
+                            return new SnowballCommand(enemyWormBomb.x, enemyWormBomb.y);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+
+                //return new SnowballCommand(enemyWormBomb.x, enemyWormBomb.y);
             }
 
             if (enemyWorm != null) {
@@ -177,9 +188,10 @@ public class Bot {
 
     private List<List<Cell>> constructFireDirectionLines(int range) {
         List<List<Cell>> directionLines = new ArrayList<>();
+        boolean friendlyFire = false;
         for (Direction direction : Direction.values()) {
             List<Cell> directionLine = new ArrayList<>();
-            for (int directionMultiplier = 1; directionMultiplier <= range; directionMultiplier++) {
+            for (int directionMultiplier = 1; directionMultiplier <= range && !friendlyFire; directionMultiplier++) {
 
                 int coordinateX = currentWorm.position.x + (directionMultiplier * direction.x);
                 int coordinateY = currentWorm.position.y + (directionMultiplier * direction.y);
@@ -189,6 +201,17 @@ public class Bot {
                 }
 
                 if (euclideanDistance(currentWorm.position.x, currentWorm.position.y, coordinateX, coordinateY) > range) {
+                    break;
+                }
+
+                Worm[] listOfPlayerWorms = gameState.myPlayer.worms;
+                for (int i = 0; i < listOfPlayerWorms.length; i++) {
+                    if (coordinateX == listOfPlayerWorms[i].position.x && coordinateY == listOfPlayerWorms[i].position.y) {
+                        friendlyFire = true;
+                        break;
+                    }
+                }
+                if (friendlyFire) {
                     break;
                 }
 
