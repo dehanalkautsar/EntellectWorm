@@ -14,12 +14,14 @@ public class Bot {
     private GameState gameState;
     private Opponent opponent;
     private MyWorm currentWorm;
+    private MyPlayer myPlayer;
 
     public Bot(Random random, GameState gameState) {
         this.random = random;
         this.gameState = gameState;
         this.opponent = gameState.opponents[0];
         this.currentWorm = getCurrentWorm(gameState);
+        this.myPlayer = gameState.myPlayer;
     }
 
     private MyWorm getCurrentWorm(GameState gameState) {
@@ -34,10 +36,104 @@ public class Bot {
         Worm enemyWorm = getFirstWormInRange();
         Position enemyWormBomb = getFirstWormInRangeToBomb(5); //assume : range of banana and snowball is th same
 
-        /*if (enemyWorm != null) {
-            Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
-            return new ShootCommand(direction);
-        }*/
+        Worm[] listOfPlayerWorms = gameState.myPlayer.worms;
+        int id = 0;
+
+        if (currentWorm.freeze_round > 0 && myPlayer.count_token > 0) {
+            int i;
+            for (i = 0; i < listOfPlayerWorms.length; i++) {
+                if (listOfPlayerWorms[i].freeze_round == 0 && listOfPlayerWorms[i].health > 0) {
+                    id = listOfPlayerWorms[i].id;
+                    break;
+                }
+            }
+            if (id != 0) {
+                if (id == 1) {
+                    if (enemyWorm != null) {
+                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWorm.position);
+                        return new SelectCommand(id,"shoot "+direction.name());
+                    }
+
+                    if (listOfPlayerWorms[i].position.x >= 15 && listOfPlayerWorms[i].position.x <= 18 && listOfPlayerWorms[i].position.y >= 15 && listOfPlayerWorms[i].position.y <= 18) {
+                        return new DoNothingCommand();
+                    }
+
+                    List<Cell> surroundingBlocks = getSurroundingCells(listOfPlayerWorms[i].position.x, listOfPlayerWorms[i].position.y);
+                    int cellIdx = 2; //random.nextInt(surroundingBlocks.size());
+                    if (listOfPlayerWorms[i].position.y > 17) {
+                        cellIdx = 5;
+                    }
+
+                    Cell block = surroundingBlocks.get(cellIdx);
+                    if (block.type == CellType.AIR) {
+                        String X = String.valueOf(block.x);
+                        String Y = String.valueOf(block.y);
+                        return new SelectCommand(id,"move "+X+" "+Y);
+                    } else if (block.type == CellType.DIRT) {
+                        String X = String.valueOf(block.x);
+                        String Y = String.valueOf(block.y);
+                        return new SelectCommand(id,"dig "+X+" "+Y);
+                    }
+                }
+
+                if (id == 2) {
+                    if (enemyWorm != null) {
+                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWorm.position);
+                        return new SelectCommand(id,"shoot "+direction.name());
+                    }
+
+                    if (listOfPlayerWorms[i].position.x >= 15 && listOfPlayerWorms[i].position.x <= 18 && listOfPlayerWorms[i].position.y >= 15 && listOfPlayerWorms[i].position.y <= 18) {
+                        return new DoNothingCommand();
+                    }
+
+                    List<Cell> surroundingBlocks = getSurroundingCells(listOfPlayerWorms[i].position.x, listOfPlayerWorms[i].position.y);
+                    int cellIdx = 0; //random.nextInt(surroundingBlocks.size());
+                    if (listOfPlayerWorms[i].position.y < 16) {
+                        cellIdx = 7;
+                    }
+
+                    Cell block = surroundingBlocks.get(cellIdx);
+                    if (block.type == CellType.AIR) {
+                        String X = String.valueOf(block.x);
+                        String Y = String.valueOf(block.y);
+                        return new SelectCommand(id,"move "+X+" "+Y);
+                    } else if (block.type == CellType.DIRT) {
+                        String X = String.valueOf(block.x);
+                        String Y = String.valueOf(block.y);
+                        return new SelectCommand(id,"dig "+X+" "+Y);
+                    }
+                }
+
+                if (id == 3) {
+                    if (enemyWorm != null) {
+                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWorm.position);
+                        return new SelectCommand(id,"shoot "+direction.name());
+                    }
+
+                    if (listOfPlayerWorms[i].position.x >= 15 && listOfPlayerWorms[i].position.x <= 18 && listOfPlayerWorms[i].position.y >= 15 && listOfPlayerWorms[i].position.y <= 18) {
+                        return new DoNothingCommand();
+                    }
+
+                    List<Cell> surroundingBlocks = getSurroundingCells(listOfPlayerWorms[i].position.x, listOfPlayerWorms[i].position.y);
+                    int cellIdx = 6; //random.nextInt(surroundingBlocks.size());
+                    if (listOfPlayerWorms[i].position.x > 17) {
+                        cellIdx = 1;
+                    }
+
+                    Cell block = surroundingBlocks.get(cellIdx);
+                    if (block.type == CellType.AIR) {
+                        String X = String.valueOf(block.x);
+                        String Y = String.valueOf(block.y);
+                        return new SelectCommand(id,"move "+X+" "+Y);
+                    } else if (block.type == CellType.DIRT) {
+                        String X = String.valueOf(block.x);
+                        String Y = String.valueOf(block.y);
+                        return new SelectCommand(id,"dig "+X+" "+Y);
+                    }
+                }
+            }
+            else { return new DoNothingCommand();}
+        }
 
         if (currentWorm.id == 1) {
             if (enemyWorm != null) {
