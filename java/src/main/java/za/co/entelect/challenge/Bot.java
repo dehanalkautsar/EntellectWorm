@@ -48,13 +48,74 @@ public class Bot {
                 }
             }
             if (id != 0) {
+
+                //resolve direction for new worm
+
+                List<List<Cell>> directionLinesSelect = new ArrayList<>();
+                boolean friendlyFire = false;
+                for (Direction direction : Direction.values()) {
+                    List<Cell> directionLine = new ArrayList<>();
+                    for (int directionMultiplier = 1; directionMultiplier <= 4 && !friendlyFire; directionMultiplier++) {
+
+                        int coordinateX = listOfPlayerWorms[i].position.x + (directionMultiplier * direction.x);
+                        int coordinateY = listOfPlayerWorms[i].position.y + (directionMultiplier * direction.y);
+
+                        if (!isValidCoordinate(coordinateX, coordinateY)) {
+                            break;
+                        }
+
+                        if (euclideanDistance(listOfPlayerWorms[i].position.x, listOfPlayerWorms[i].position.y, coordinateX, coordinateY) > 4) {
+                            break;
+                        }
+
+                        Worm[] listOfPlayerWormsA = gameState.myPlayer.worms;
+                        for (int j = 0; j < listOfPlayerWormsA.length; j++) {
+                            if (coordinateX == listOfPlayerWormsA[j].position.x && coordinateY == listOfPlayerWormsA[j].position.y) {
+                                friendlyFire = true;
+                                break;
+                            }
+                        }
+                        if (friendlyFire) {
+                            break;
+                        }
+
+                        Cell cell = gameState.map[coordinateY][coordinateX];
+                        if (cell.type != CellType.AIR) {
+                            break;
+                        }
+
+                        directionLine.add(cell);
+                    }
+                    directionLinesSelect.add(directionLine);
+                }
+
+                Set<String> cellsSelect = directionLinesSelect
+                        .stream()
+                        .flatMap(Collection::stream)
+                        .map(cell -> String.format("%d_%d", cell.x, cell.y))
+                        .collect(Collectors.toSet());
+
+                Worm enemyWormSelectToShoot = null;
+                for (Worm enemyWormSelect : opponent.worms) {
+                    String enemyPosition = String.format("%d_%d", enemyWormSelect.position.x, enemyWormSelect.position.y);
+                    if (cellsSelect.contains(enemyPosition) && enemyWormSelect.health > 0) {
+                        enemyWormSelectToShoot = enemyWormSelect;
+                    }
+                }
+
+                //end of prototype
+
                 if (id == 1) {
-                    if (enemyWorm != null) {
-                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWorm.position);
+                    if (enemyWormSelectToShoot != null) {
+                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWormSelectToShoot.position);
                         return new SelectCommand(id,"shoot "+direction.name());
                     }
 
                     if (listOfPlayerWorms[i].position.x >= 15 && listOfPlayerWorms[i].position.x <= 18 && listOfPlayerWorms[i].position.y >= 15 && listOfPlayerWorms[i].position.y <= 18) {
+                        return new DoNothingCommand();
+                    }
+
+                    if ((listOfPlayerWorms[i].position.x == 14 && listOfPlayerWorms[i].position.y == 14) || (listOfPlayerWorms[i].position.x == 17 && listOfPlayerWorms[i].position.y == 19)) {
                         return new DoNothingCommand();
                     }
 
@@ -77,12 +138,16 @@ public class Bot {
                 }
 
                 if (id == 2) {
-                    if (enemyWorm != null) {
-                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWorm.position);
+                    if (enemyWormSelectToShoot != null) {
+                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWormSelectToShoot.position);
                         return new SelectCommand(id,"shoot "+direction.name());
                     }
 
                     if (listOfPlayerWorms[i].position.x >= 15 && listOfPlayerWorms[i].position.x <= 18 && listOfPlayerWorms[i].position.y >= 15 && listOfPlayerWorms[i].position.y <= 18) {
+                        return new DoNothingCommand();
+                    }
+
+                    if ((listOfPlayerWorms[i].position.x == 14 && listOfPlayerWorms[i].position.y == 18) || (listOfPlayerWorms[i].position.x == 18 && listOfPlayerWorms[i].position.y == 14)) {
                         return new DoNothingCommand();
                     }
 
@@ -105,8 +170,8 @@ public class Bot {
                 }
 
                 if (id == 3) {
-                    if (enemyWorm != null) {
-                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWorm.position);
+                    if (enemyWormSelectToShoot != null) {
+                        Direction direction = resolveDirection(listOfPlayerWorms[i].position, enemyWormSelectToShoot.position);
                         return new SelectCommand(id,"shoot "+direction.name());
                     }
 
@@ -145,11 +210,16 @@ public class Bot {
                 return new DoNothingCommand();
             }
 
+            if ((currentWorm.position.x == 14 && currentWorm.position.y == 14) || (currentWorm.position.x == 17 && currentWorm.position.y == 19)) {
+                return new DoNothingCommand();
+            }
+
             List<Cell> surroundingBlocks = getSurroundingCells(currentWorm.position.x, currentWorm.position.y);
             int cellIdx = 2; //random.nextInt(surroundingBlocks.size());
             if (currentWorm.position.y > 17) {
                 cellIdx = 5;
             }
+
 
             Cell block = surroundingBlocks.get(cellIdx);
             if (block.type == CellType.AIR) {
@@ -159,8 +229,9 @@ public class Bot {
             }
         }
 
+
         if (currentWorm.id == 2) {
-            if (enemyWormBomb.x != currentWorm.position.x && enemyWormBomb.y != currentWorm.position.y && getCurrentWorm(gameState).bananaBombs.count > 0)  {
+            if ((enemyWormBomb.x != currentWorm.position.x || enemyWormBomb.y != currentWorm.position.y) && getCurrentWorm(gameState).bananaBombs.count > 0)  {
                 return new BananaBombCommand(enemyWormBomb.x, enemyWormBomb.y);
             }
 
@@ -170,6 +241,10 @@ public class Bot {
             }
 
             if (currentWorm.position.x >= 15 && currentWorm.position.x <= 18 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
+                return new DoNothingCommand();
+            }
+
+            if ((currentWorm.position.x == 14 && currentWorm.position.y == 18) || (currentWorm.position.x == 18 && currentWorm.position.y == 14)) {
                 return new DoNothingCommand();
             }
 
@@ -188,7 +263,7 @@ public class Bot {
         }
 
         if (currentWorm.id == 3) {
-            if (enemyWormBomb.x != currentWorm.position.x && enemyWormBomb.y != currentWorm.position.y &&  getCurrentWorm(gameState).snowballs.count > 0) {
+            if ((enemyWormBomb.x != currentWorm.position.x || enemyWormBomb.y != currentWorm.position.y) &&  getCurrentWorm(gameState).snowballs.count > 0) {
                 for (Worm enemyFreeze : opponent.worms) {
                     if (enemyFreeze.position.x == enemyWormBomb.x && enemyFreeze.position.y == enemyWormBomb.y) {
                         if (enemyFreeze.freeze_round == 0) {
@@ -208,7 +283,7 @@ public class Bot {
                 return new ShootCommand(direction);
             }
 
-            if (currentWorm.position.x >= 15 && currentWorm.position.x <= 18 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
+            if (currentWorm.position.x >= 16 && currentWorm.position.x <= 17 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
                 return new DoNothingCommand();
             }
 
@@ -323,8 +398,6 @@ public class Bot {
 
         return directionLines;
     }
-
-
 
     private List<Cell> getSurroundingCells(int x, int y) {
         ArrayList<Cell> cells = new ArrayList<>();
