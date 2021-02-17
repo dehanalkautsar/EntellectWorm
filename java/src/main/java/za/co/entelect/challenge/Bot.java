@@ -244,7 +244,7 @@ public class Bot {
                 return new ShootCommand(direction);
             }
 
-            else if (7<round && round<80) return new DoNothingCommand();
+            else if (7<round && round<60) return new DoNothingCommand();
 
             else if ((currentWorm.position.x == 14 && currentWorm.position.y == 18) || (currentWorm.position.x == 18 && currentWorm.position.y == 14)) {
                 return new DoNothingCommand();
@@ -285,7 +285,7 @@ public class Bot {
                 return new ShootCommand(direction);
             }
 
-            else if (7<round && round<70) return new DoNothingCommand();
+            else if (7<round && round<75) return new DoNothingCommand();
 
             else if (currentWorm.position.x >= 16 && currentWorm.position.x <= 17 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
                 return new DoNothingCommand();
@@ -352,7 +352,7 @@ public class Bot {
                     continue;
                 }
                 for (Worm enemyWorm : opponent.worms) {
-                    if (i == enemyWorm.position.x && j == enemyWorm.position.y) {
+                    if (i == enemyWorm.position.x && j == enemyWorm.position.y && enemyWorm.health>0) {
                         return enemyWorm.position;
                     }
                 }
