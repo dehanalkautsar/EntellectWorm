@@ -15,6 +15,7 @@ public class Bot {
     private Opponent opponent;
     private MyWorm currentWorm;
     private MyPlayer myPlayer;
+    private int round;
 
     public Bot(Random random, GameState gameState) {
         this.random = random;
@@ -22,6 +23,7 @@ public class Bot {
         this.opponent = gameState.opponents[0];
         this.currentWorm = getCurrentWorm(gameState);
         this.myPlayer = gameState.myPlayer;
+        this.round = gameState.currentRound;
     }
 
     private MyWorm getCurrentWorm(GameState gameState) {
@@ -41,7 +43,7 @@ public class Bot {
 
         if (currentWorm.freeze_round > 0 && myPlayer.count_token > 0) {
             int i;
-            for (i = 0; i < listOfPlayerWorms.length; i++) {
+            for (i = 0; i<listOfPlayerWorms.length; i++) {
                 if (listOfPlayerWorms[i].freeze_round == 0 && listOfPlayerWorms[i].health > 0) {
                     id = listOfPlayerWorms[i].id;
                     break;
@@ -206,6 +208,8 @@ public class Bot {
                 return new ShootCommand(direction);
             }
 
+            else if (round<10) return new DoNothingCommand();
+
             if (currentWorm.position.x >= 15 && currentWorm.position.x <= 18 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
                 return new DoNothingCommand();
             }
@@ -240,11 +244,9 @@ public class Bot {
                 return new ShootCommand(direction);
             }
 
-            if (currentWorm.position.x >= 15 && currentWorm.position.x <= 18 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
-                return new DoNothingCommand();
-            }
+            else if (7<round && round<80) return new DoNothingCommand();
 
-            if ((currentWorm.position.x == 14 && currentWorm.position.y == 18) || (currentWorm.position.x == 18 && currentWorm.position.y == 14)) {
+            else if ((currentWorm.position.x == 14 && currentWorm.position.y == 18) || (currentWorm.position.x == 18 && currentWorm.position.y == 14)) {
                 return new DoNothingCommand();
             }
 
@@ -283,7 +285,9 @@ public class Bot {
                 return new ShootCommand(direction);
             }
 
-            if (currentWorm.position.x >= 16 && currentWorm.position.x <= 17 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
+            else if (7<round && round<70) return new DoNothingCommand();
+
+            else if (currentWorm.position.x >= 16 && currentWorm.position.x <= 17 && currentWorm.position.y >= 15 && currentWorm.position.y <= 18) {
                 return new DoNothingCommand();
             }
 
@@ -377,7 +381,8 @@ public class Bot {
 
                 Worm[] listOfPlayerWorms = gameState.myPlayer.worms;
                 for (int i = 0; i < listOfPlayerWorms.length; i++) {
-                    if (coordinateX == listOfPlayerWorms[i].position.x && coordinateY == listOfPlayerWorms[i].position.y) {
+                    if (coordinateX == listOfPlayerWorms[i].position.x && coordinateY == listOfPlayerWorms[i].position.y
+                        && listOfPlayerWorms[i].health>0) {
                         friendlyFire = true;
                         break;
                     }
